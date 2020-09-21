@@ -10,9 +10,13 @@ import java.net.URL;
 public class Lab1Demo {
     public static void main(String[] args) throws MalformedURLException {
         final URL url = new URL("http://www.google.com/");
-        final String fileName = "file.txt";
+        final String fileNameForSocketGetter = "file1.txt";
+        final String fileNameForURLConnectionGetter = "file2.txt";
 
         URLGetter urlGetter = new SocketGetter(url);
-        urlGetter.getData(fileName);
+        urlGetter.getData(fileNameForSocketGetter);
+
+        urlGetter = new URLConnectionGetter(url);
+        urlGetter.getData(fileNameForURLConnectionGetter);
     }
 }
