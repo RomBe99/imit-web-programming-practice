@@ -2,109 +2,152 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="../styles/style.css">
+    <link rel="stylesheet" href="../styles/base_page_style.css">
+    <link rel="stylesheet" href="../styles/game_style.css">
+    <link rel="stylesheet" href="../styles/checkerboard_styles.css">
     <title>Русские шашки - Игра</title>
 </head>
 
 <body>
-<header>
-    <img src="../images/logo.jpg" alt="Лого сайта" width="150px" height="150px"/>
+<h1 class="page-title">Игра</h1>
+<header class="header">
+    <img src="../images/logo.jpg" alt="Лого сайта" class="logo__header"/>
 
-    <nav align="center">
-        <ul>
+    <nav>
+        <ul class="menu__header">
             <li><a href="index.html">Главная</a></li>
             <li><a href="rules.html">Правила</a></li>
         </ul>
     </nav>
 </header>
 
-<table align="center" border="5px">
-    <tr align="center" valign="center" height="75px">
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
+<table class="checkerboard-table">
+    <tr class="row__checkerboard-table">
+        <td class="empty-cell__row"></td>
+        <td class="denotation__row">A</td>
+        <td class="denotation__row">B</td>
+        <td class="denotation__row">C</td>
+        <td class="denotation__row">D</td>
+        <td class="denotation__row">E</td>
+        <td class="denotation__row">F</td>
+        <td class="denotation__row">G</td>
+        <td class="denotation__row">H</td>
+        <td class="empty-cell__row"></td>
     </tr>
-    <tr align="center" valign="center" height="75px">
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
+    <tr class="row__checkerboard-table">
+        <td class="number-cell__row">8</td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
+        <td class="number-cell__row">8</td>
     </tr>
-    <tr align="center" valign="center" height="75px">
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
+    <tr class="row__checkerboard-table">
+        <td class="number-cell__row">7</td>
+        <td class="cell__row black__cell"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="number-cell__row">7</td>
     </tr>
-
-    <tr align="center" valign="center" height="75px">
-        <td bgcolor="#a52a2a" width="75px"></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-    </tr>
-    <tr align="center" valign="center" height="75px">
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"></td>
-        <td bgcolor="#ffe4c4" width="75px" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"></td>
+    <tr class="row__checkerboard-table">
+        <td class="number-cell__row">6</td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/bss.png" alt="Чёрная шашка"/></td>
+        <td class="number-cell__row">6</td>
     </tr>
 
-    <tr align="center" valign="center" height="75px">
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
+    <tr class="row__checkerboard-table">
+        <td class="number-cell__row">5</td>
+        <td class="cell__row black__cell"></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"></td>
+        <td class="cell__row white__cell"></td>
+        <td class="number-cell__row">5</td>
     </tr>
-    <tr align="center" valign="center" height="75px">
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
+    <tr class="row__checkerboard-table">
+        <td class="number-cell__row">4</td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"></td>
+        <td class="number-cell__row">4</td>
     </tr>
-    <tr align="center" valign="center" height="75px">
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
-        <td bgcolor="#a52a2a" width="75px"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
-        <td bgcolor="#ffe4c4" width="75px"></td>
+
+    <tr class="row__checkerboard-table">
+        <td class="number-cell__row">3</td>
+        <td class="cell__row black__cell"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="number-cell__row">3</td>
+    </tr>
+    <tr class="row__checkerboard-table">
+        <td class="number-cell__row">2</td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
+        <td class="number-cell__row">2</td>
+    </tr>
+    <tr class="row__checkerboard-table">
+        <td class="number-cell__row">1</td>
+        <td class="cell__row black__cell"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="cell__row black__cell"><img src="../images/checkers/wss.png" alt="Белая шашка"/></td>
+        <td class="cell__row white__cell"></td>
+        <td class="number-cell__row">1</td>
+    </tr>
+    <tr class="row__checkerboard-table">
+        <td class="empty-cell__row"></td>
+        <td class="denotation__row">A</td>
+        <td class="denotation__row">B</td>
+        <td class="denotation__row">C</td>
+        <td class="denotation__row">D</td>
+        <td class="denotation__row">E</td>
+        <td class="denotation__row">F</td>
+        <td class="denotation__row">G</td>
+        <td class="denotation__row">H</td>
+        <td class="empty-cell__row"></td>
     </tr>
 </table>
 
-<footer>
-    <p>© 2020 - JVCR Solutions. Все права защищены. Дизайн и разработка: <a href="https://vk.com/roltan007">Белинский Роман</a>.</p>
+<footer class="footer">
+    <p class="copyright__footer">© 2020 - JVCR Solutions. Все права защищены. Дизайн и разработка: <a href="https://vk.com/roltan007">Белинский Роман</a>.</p>
 </footer>
 </body>
 </html>

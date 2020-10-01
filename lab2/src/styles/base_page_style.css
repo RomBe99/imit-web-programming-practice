@@ -1,0 +1,47 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    width: 1000px;
+    margin: 0 auto 50px;
+}
+
+.logo__header {
+    width: 150px;
+    height: 150px;
+}
+
+.menu__header {
+    width: 300px;
+    display: flex;
+    justify-content: space-between;
+    list-style: none;
+    padding: 0;
+}
+
+.footer {
+    margin-top: 50px;
+    width: 100%;
+    background-color: #5cc0a9;
+}
+
+.copyright__footer {
+    margin: 0 0 50px 100px;
+}
+
+.page-title {
+    color: cornflowerblue;
+}
