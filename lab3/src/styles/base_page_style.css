@@ -30,6 +30,14 @@ body {
     box-shadow: 0 0 25px 0 rgba(0, 0, 0, 0.1);
 }
 
+.additional-align {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-left: 20px;
+}
+
 .logo__header {
     width: 100px;
     height: 100px;
@@ -39,10 +47,15 @@ body {
     color: cornflowerblue;
 }
 
-.menu__header {
-    width: 300px;
+.content {
     display: flex;
     justify-content: space-between;
+    width: 1000px;
+}
+
+.menu__content {
+    display: flex;
+    flex-direction: column;
     list-style: none;
     padding: 0;
 }
@@ -60,29 +73,29 @@ body {
     color: black;
 }
 
-.article-style {
+.article-style__content {
     width: 1000px;
     background-color: white;
     box-shadow: 0 0 25px 0 rgba(0, 0, 0, 0.1);
 }
 
-.article-title {
+.article-title__content {
     text-align: center;
     color: #7ba7f3;
     padding: 10px 0;
 }
 
-.article-subtitle {
+.article-subtitle__content {
     margin: 0 25px;
     padding: 5px 0;
 }
 
-.article-text {
+.article-text__content {
     margin: 0 50px;
     padding-bottom: 10px;
 }
 
-.article-list {
+.article-list__content {
     list-style: none;
     padding-left: 25px;
 }
