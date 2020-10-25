@@ -17,7 +17,7 @@ class Checker {
 }
 
 function checkerFactory(checkerColor, isKing) {
-    let factory = new Map([
+    const factory = new Map([
         [white, new Checker(white, isKing)],
         [black, new Checker(black, isKing)]
     ]);
@@ -27,12 +27,15 @@ function checkerFactory(checkerColor, isKing) {
 
 class CheckerBoard {
     constructor() {
-        this._boardCol = 8;
-        this._boardRow = 8;
-        this._board = new Array(this._boardRow);
+        this._colCount = 8;
+        this._rowCount = 8;
+        this._board = new Array(this._rowCount);
 
-        for (let i = 0; i < this._boardRow; i++) {
-            this._board.push(new Array(this._boardCol));
+        for (let i = 0; i < this._rowCount; i++) {
+            let temp = new Array(this._colCount);
+            temp.fill(null);
+
+            this._board[i] = temp;
         }
     }
 
@@ -41,34 +44,103 @@ class CheckerBoard {
     }
 
     removeChecker(row, col) {
-        this.setChecker(row, col, undefined);
+        this.setChecker(row, col, null);
     }
 
     clear() {
-        for (let i = 0; i < this._boardRow; i++) {
-            this._board.push(new Array(this._boardCol));
+        for (let i = 0; i < this._rowCount; i++) {
+            let temp = new Array(this._colCount);
+            temp.fill(null);
+
+            this._board[i] = temp;
         }
     }
 
-    get boardCol() {
-        return this._boardCol;
+    get colCount() {
+        return this._colCount;
     }
 
-    get boardRow() {
-        return this._boardRow;
+    get rowCount() {
+        return this._rowCount;
+    }
+
+
+    get board() {
+        return this._board;
     }
 }
 
-function moves() {
-    let result = [];
+function drawBoard(checkerBoard) {
+    const boardRow = checkerBoard.rowCount;
+    const boardCol = checkerBoard.colCount;
+    const board = checkerBoard.board;
+    const idTransformer = (row, col) => {
+        return String.fromCharCode(65 + col).concat(row + 1);
+    };
+    const getImage = (checkerColor, isKing) => {
+        const paths = new Map([
+            [white + false, '../images/checkers/wss.png'],
+            [black + false, '../images/checkers/bss.png'],
+            [white + true, '../images/checkers/wd.png'],
+            [black + true, '../images/checkers/bd.png']
+        ]);
 
-    return result;
+        const img = new Image();
+        img.src = paths.get(checkerColor + isKing);
+
+        return img;
+    };
+
+    for (let row = 0; row < boardRow; row++) {
+        for (let col = 0; col < boardCol; col++) {
+            let checker = board[row][col];
+
+            if (checker !== null) {
+                let elemId = idTransformer(row, col);
+
+                document.getElementById(elemId).appendChild(getImage(checker.checkerColor, checker.isKing));
+            }
+        }
+    }
 }
-
-
 
 function startGame() {
-    // TODO Implement a standard checker alignment
+    const rowsCount = 3;
+
+    let board = new CheckerBoard();
+    let flag = true;
+
+    for (let i = 0; i < rowsCount; i++) {
+        for (let j = 0; j < board.colCount; j++) {
+            if (flag) {
+                board.setChecker(i, j, checkerFactory(white, false));
+            } else {
+                board.removeChecker(i, j);
+            }
+
+            flag = !flag;
+        }
+
+        flag = !flag;
+    }
+
+    flag = false;
+
+    for (let i = board.rowCount - 1; i > board.rowCount - 1 - rowsCount; i--) {
+        for (let j = 0; j < board.colCount; j++) {
+            if (flag) {
+                board.setChecker(i, j, checkerFactory(black, false));
+            } else {
+                board.removeChecker(i, j);
+            }
+
+            flag = !flag;
+        }
+
+        flag = !flag;
+    }
+
+    drawBoard(board);
 }
 
 function startExample() {
