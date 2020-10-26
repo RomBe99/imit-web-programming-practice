@@ -144,5 +144,16 @@ function startGame() {
 }
 
 function startExample() {
-    // TODO Implement a example checker alignment
+    let board = new CheckerBoard();
+    board.setChecker(3, 5, checkerFactory(white, false));
+    board.setChecker(3, 7, checkerFactory(white, false));
+
+    board.setChecker(7, 1, checkerFactory(black, false));
+    board.setChecker(0, 2, checkerFactory(black, true));
+    board.setChecker(4, 2, checkerFactory(black, false));
+    board.setChecker(6, 2, checkerFactory(black, false));
+    board.setChecker(6, 4, checkerFactory(black, false));
+    board.setChecker(5, 7, checkerFactory(black, false));
+
+    drawBoard(board);
 }
