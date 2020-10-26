@@ -70,45 +70,89 @@ class CheckerBoard {
     }
 }
 
-function drawBoard(checkerBoard) {
-    const boardRow = checkerBoard.rowCount;
-    const boardCol = checkerBoard.colCount;
-    const board = checkerBoard.board;
-    const idTransformer = (row, col) => {
-        return String.fromCharCode(65 + col).concat(row + 1);
-    };
-    const getImage = (checkerColor, isKing) => {
-        const paths = new Map([
-            [white + false, '../images/checkers/wss.png'],
-            [black + false, '../images/checkers/bss.png'],
-            [white + true, '../images/checkers/wd.png'],
-            [black + true, '../images/checkers/bd.png']
-        ]);
+function idTransformer(row, col) {
+    return String.fromCharCode(65 + col).concat(row + 1);
+}
 
-        const img = new Image();
-        img.src = paths.get(checkerColor + isKing);
+class BoardRenderer {
+    constructor(board) {
+        this._board = board;
+        this._isRendered = false;
+    }
 
-        return img;
-    };
+    drawBoard() {
+        const boardRow = this._board.rowCount;
+        const boardCol = this._board.colCount;
+        const board = this._board.board;
+        const getImage = (checkerColor, isKing) => {
+            const paths = new Map([
+                [white + false, '../images/checkers/wss.png'],
+                [black + false, '../images/checkers/bss.png'],
+                [white + true, '../images/checkers/wd.png'],
+                [black + true, '../images/checkers/bd.png']
+            ]);
 
-    for (let row = 0; row < boardRow; row++) {
-        for (let col = 0; col < boardCol; col++) {
-            let checker = board[row][col];
+            const img = new Image();
+            img.src = paths.get(checkerColor + isKing);
 
-            if (checker !== null) {
-                let elemId = idTransformer(row, col);
+            return img;
+        };
 
-                document.getElementById(elemId).appendChild(getImage(checker.checkerColor, checker.isKing));
+        for (let row = 0; row < boardRow; row++) {
+            for (let col = 0; col < boardCol; col++) {
+                let checker = board[row][col];
+
+                if (checker !== null) {
+                    let elemId = idTransformer(row, col);
+
+                    document.getElementById(elemId).appendChild(getImage(checker.checkerColor, checker.isKing));
+                }
             }
         }
+
+        this._isRendered = true;
+    }
+
+    clearBoard() {
+        const boardRow = this._board.rowCount;
+        const boardCol = this._board.colCount;
+
+        for (let row = 0; row < boardRow; row++) {
+            for (let col = 0; col < boardCol; col++) {
+                let elemId = idTransformer(row, col);
+                let element = document.getElementById(elemId);
+
+                if (element.lastChild !== null) {
+                    element.removeChild(element.lastChild);
+                }
+            }
+        }
+
+        this._isRendered = false;
+    }
+
+    refresh() {
+        if (this._isRendered) {
+            this.clearBoard();
+        }
+
+        this.drawBoard();
     }
 }
 
-function startGame() {
-    const rowsCount = 3;
+let renderer;
 
+function startGame() {
     let board = new CheckerBoard();
+
+    if (renderer !== undefined) {
+        renderer.clearBoard();
+    }
+
+    renderer = new BoardRenderer(board);
+
     let flag = true;
+    const rowsCount = 3;
 
     for (let i = 0; i < rowsCount; i++) {
         for (let j = 0; j < board.colCount; j++) {
@@ -140,11 +184,18 @@ function startGame() {
         flag = !flag;
     }
 
-    drawBoard(board);
+    renderer.drawBoard();
 }
 
 function startExample() {
     let board = new CheckerBoard();
+
+    if (renderer !== undefined) {
+        renderer.clearBoard();
+    }
+
+    renderer = new BoardRenderer(board);
+
     board.setChecker(3, 5, checkerFactory(white, false));
     board.setChecker(3, 7, checkerFactory(white, false));
 
@@ -155,5 +206,5 @@ function startExample() {
     board.setChecker(6, 4, checkerFactory(black, false));
     board.setChecker(5, 7, checkerFactory(black, false));
 
-    drawBoard(board);
+    renderer.drawBoard();
 }
