@@ -1,0 +1,18 @@
+.match-history__game {
+    border: solid;
+    height: 636px;
+    width: 150px;
+}
+
+.title__match-history {
+    text-align: center;
+}
+
+.control-buttons__content {
+    display: flex;
+    flex-direction: column;
+}
+
+.button__control-buttons {
+    margin: 5px 0 5px 0;
+}
