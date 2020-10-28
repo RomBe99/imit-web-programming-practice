@@ -375,8 +375,6 @@ function startGame() {
         flag = !flag;
     }
 
-    board.setChecker(3, 5, checkerFactory(black, false));
-
     renderer.refresh();
 }
 
