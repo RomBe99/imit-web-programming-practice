@@ -331,8 +331,20 @@ class Hinter {
 const board = new CheckerBoard();
 const renderer = new BoardRenderer(board);
 const hinter = new Hinter(board);
+let currentFieldId = null;
 
 function hint(fieldId) {
+    if (currentFieldId != null) {
+        if (fieldId === currentFieldId) {
+            currentFieldId = null;
+            renderer.refresh();
+        }
+
+        return;
+    }
+
+    currentFieldId = fieldId;
+
     const moves = hinter.hint(fieldId);
 
     if (moves !== null) {
