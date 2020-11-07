@@ -328,31 +328,58 @@ class Hinter {
     }
 }
 
+class GameController {
+    constructor(board, firstMoveColor) {
+        this._board = board;
+        this._renderer = new BoardRenderer(this._board);
+        this._hinter = new Hinter(this._board);
+        this._currentMoveColor = firstMoveColor;
+        this._currentFieldId = null;
+        this._availableMoves = null;
+    }
+
+    hintModeControl(fieldId) {
+        if (this.isHintMode()) {
+            this.stopHintMode(fieldId);
+        } else {
+            this.startHintMode(fieldId);
+        }
+    }
+
+    startGame(firstMoveColor) {
+        this._currentMoveColor = firstMoveColor;
+
+        this.stopHintMode(this._currentFieldId);
+    }
+
+    startHintMode(fieldId) {
+        this._availableMoves = this._hinter.hint(fieldId);
+
+        if (this._availableMoves != null && this._availableMoves.size !== 0) {
+            this._currentFieldId = fieldId;
+            this._renderer.drawHints(this._availableMoves, fieldId);
+        }
+    }
+
+    stopHintMode(fieldId) {
+        if (fieldId === this._currentFieldId) {
+            this._currentFieldId = null;
+            this._availableMoves = null;
+
+            this._renderer.refresh();
+        }
+    }
+
+    isHintMode() {
+        return this._currentFieldId != null;
+    }
+}
+
 const board = new CheckerBoard();
-const renderer = new BoardRenderer(board);
-const hinter = new Hinter(board);
-let currentFieldId = null;
+let gameController = new GameController(board, white);
 
 function hint(fieldId) {
-    if (currentFieldId != null) {
-        if (fieldId === currentFieldId) {
-            currentFieldId = null;
-            renderer.refresh();
-        }
-
-        return;
-    }
-
-    currentFieldId = fieldId;
-
-    const moves = hinter.hint(fieldId);
-
-    if (moves !== null) {
-        renderer.refresh();
-        renderer.drawHints(moves, fieldId);
-    } else {
-        renderer.refresh();
-    }
+    gameController.hintModeControl(fieldId);
 }
 
 function startGame() {
@@ -387,7 +414,7 @@ function startGame() {
         flag = !flag;
     }
 
-    renderer.refresh();
+    gameController.startGame(white);
 }
 
 function startExample() {
@@ -403,5 +430,5 @@ function startExample() {
     board.setChecker(6, 4, checkerFactory(black, false));
     board.setChecker(5, 7, checkerFactory(black, false));
 
-    renderer.refresh();
+    gameController.startGame(white);
 }
