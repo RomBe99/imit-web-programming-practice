@@ -369,21 +369,21 @@ class GameController {
         this._availableMoves = null;
     }
 
-    hintModeControl(fieldId) {
-        if (this.isHintMode()) {
-            this.stopHintMode(fieldId);
+    moveModeControl(fieldId) {
+        if (this.isMoveMode()) {
+            this.stopMoveMode(fieldId);
         } else {
-            this.startHintMode(fieldId);
+            this.startMoveMode(fieldId);
         }
     }
 
     startGame(firstMoveColor) {
         this._currentMoveColor = firstMoveColor;
 
-        this.stopHintMode(this._currentFieldId);
+        this.stopMoveMode(this._currentFieldId);
     }
 
-    startHintMode(fieldId) {
+    startMoveMode(fieldId) {
         this._availableMoves = this._hinter.hint(fieldId);
 
         if (this._availableMoves != null && this._availableMoves.size !== 0) {
@@ -392,7 +392,7 @@ class GameController {
         }
     }
 
-    stopHintMode(fieldId) {
+    stopMoveMode(fieldId) {
         if (fieldId === this._currentFieldId) {
             this._currentFieldId = null;
             this._availableMoves = null;
@@ -401,7 +401,7 @@ class GameController {
         }
     }
 
-    isHintMode() {
+    isMoveMode() {
         return this._currentFieldId != null;
     }
 }
@@ -409,18 +409,18 @@ class GameController {
 const board = new CheckerBoard();
 let gameController = new GameController(board, white);
 
-function hint(fieldId) {
-    gameController.hintModeControl(fieldId);
+function move(fieldId) {
+    gameController.moveModeControl(fieldId);
 }
 
 function endTurn() {
-    if (gameController.isHintMode()) {
+    if (gameController.isMoveMode()) {
         // TODO
     }
 }
 
 function undoTurn() {
-    if (gameController.isHintMode()) {
+    if (gameController.isMoveMode()) {
         // TODO
     }
 }
