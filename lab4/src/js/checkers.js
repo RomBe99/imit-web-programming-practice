@@ -38,6 +38,8 @@ class CheckerBoard {
     constructor() {
         this._colCount = 8;
         this._rowCount = 8;
+        this._blackCount = 0;
+        this._whiteCount = 0;
         this._board = new Array(this._rowCount);
 
         for (let i = 0; i < this._rowCount; i++) {
@@ -46,6 +48,24 @@ class CheckerBoard {
     }
 
     setChecker(row, col, checker) {
+        if (checker != null) {
+            if (checker.checkerColor === white) {
+                this._whiteCount++;
+            } else {
+                this._blackCount++;
+            }
+        }
+
+        const tempChecker = this._board[row][col];
+
+        if (tempChecker != null) {
+            if (tempChecker.checkerColor === white) {
+                this._whiteCount--;
+            } else {
+                this._blackCount--;
+            }
+        }
+
         this._board[row][col] = checker;
     }
 
@@ -57,6 +77,9 @@ class CheckerBoard {
         for (let i = 0; i < this._rowCount; i++) {
             this._board[i] = new Array(this._colCount).fill(null);
         }
+
+        this._whiteCount = 0;
+        this._blackCount = 0;
     }
 
     getChecker(row, col) {
@@ -64,13 +87,13 @@ class CheckerBoard {
     }
 
     containsChecker(row, col) {
-        return this.getChecker(row, col) !== null;
+        return this.getChecker(row, col) != null;
     }
 
     containsCheckerWithColor(row, col, color) {
         const checker = this.getChecker(row, col);
 
-        return checker !== null ? checker.checkerColor === color : false;
+        return checker != null ? checker.checkerColor === color : false;
     }
 
     get colCount() {
@@ -79,6 +102,14 @@ class CheckerBoard {
 
     get rowCount() {
         return this._rowCount;
+    }
+
+    get whiteCount() {
+        return this._whiteCount;
+    }
+
+    get blackCount() {
+        return this._blackCount;
     }
 }
 
@@ -152,7 +183,7 @@ class BoardRenderer {
             for (let col = 0; col < boardCol; col++) {
                 let checker = this._board.getChecker(row, col);
 
-                if (checker !== null) {
+                if (checker != null) {
                     let elemId = idTransformer(row, col);
 
                     document.getElementById(elemId).appendChild(getImage(checker.checkerColor, checker.isKing));
@@ -172,7 +203,7 @@ class BoardRenderer {
                 let elemId = idTransformer(row, col);
                 let element = document.getElementById(elemId);
 
-                if (element.lastChild !== null) {
+                if (element.lastChild != null) {
                     element.removeChild(element.lastChild);
                 }
             }
