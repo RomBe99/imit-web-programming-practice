@@ -249,7 +249,7 @@ class Hinter {
 
         const checker = this._board.getChecker(row, col);
 
-        if (checker === null) {
+        if (checker == null) {
             return null;
         }
 
@@ -411,6 +411,18 @@ let gameController = new GameController(board, white);
 
 function hint(fieldId) {
     gameController.hintModeControl(fieldId);
+}
+
+function endTurn() {
+    if (gameController.isHintMode()) {
+        // TODO
+    }
+}
+
+function undoTurn() {
+    if (gameController.isHintMode()) {
+        // TODO
+    }
 }
 
 function startGame() {
