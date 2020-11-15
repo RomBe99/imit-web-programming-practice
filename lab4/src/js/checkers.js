@@ -369,12 +369,13 @@ class GameController {
         this._availableMoves = null;
     }
 
-    moveModeControl(fieldId) {
-        if (this.isMoveMode()) {
-            this.stopMoveMode(fieldId);
-        } else {
-            this.startMoveMode(fieldId);
-        }
+    commit() {
+        // TODO
+        this._renderer.refresh();
+    }
+
+    rollback() {
+        // TODO
     }
 
     startGame(firstMoveColor) {
@@ -384,9 +385,9 @@ class GameController {
     }
 
     startMoveMode(fieldId) {
-        this._availableMoves = this._hinter.hint(fieldId);
+        const existMoves = this.checkMove(fieldId);
 
-        if (this._availableMoves != null && this._availableMoves.size !== 0) {
+        if (existMoves) {
             this._currentFieldId = fieldId;
             this._renderer.drawHints(this._availableMoves, fieldId);
         }
@@ -401,27 +402,74 @@ class GameController {
         }
     }
 
+    moveTo(fieldId) {
+        const move = this._availableMoves.get(fieldId);
+
+        if (move == null) {
+            return;
+        }
+
+        const oldRowCol = idParser(this._currentFieldId);
+        const newRowCol = idParser(fieldId);
+        const canTransformToKing = () => {
+            return newRowCol[0] === 0 || newRowCol[1] === this._board.rowCount - 1;
+        };
+        let movedChecker = this._board.getChecker(oldRowCol[0], oldRowCol[1]);
+
+        this._board.removeChecker(oldRowCol[0], oldRowCol[1]);
+
+        if (!movedChecker.isKing && canTransformToKing()) {
+            movedChecker = checkerFactory(movedChecker.checkerColor, true);
+        }
+
+        this._board.setChecker(newRowCol[0], newRowCol[1], movedChecker);
+        this._renderer.refresh();
+    }
+
+    changePlayerMove() {
+        this._currentMoveColor = this._currentMoveColor === white ? black : white;
+    }
+
     isMoveMode() {
         return this._currentFieldId != null;
+    }
+
+    checkMove(fieldId) {
+        const rowCol = idParser(fieldId);
+        const isCorrectChecker = this._board.getChecker(rowCol[0], rowCol[1]).checkerColor === this._currentMoveColor;
+
+        if (isCorrectChecker) {
+            this._availableMoves = this._hinter.hint(fieldId);
+        }
+
+        return this._availableMoves != null && this._availableMoves.size !== 0;
     }
 }
 
 const board = new CheckerBoard();
-let gameController = new GameController(board, white);
+const controller = new GameController(board, white);
 
 function move(fieldId) {
-    gameController.moveModeControl(fieldId);
+    if (controller.isMoveMode()) {
+        controller.stopMoveMode(fieldId);
+
+        if (controller.isMoveMode()) {
+            controller.moveTo(fieldId);
+        }
+    } else {
+        controller.startMoveMode(fieldId);
+    }
 }
 
 function endTurn() {
-    if (gameController.isMoveMode()) {
-        // TODO
+    if (controller.isMoveMode()) {
+        controller.commit();
     }
 }
 
 function undoTurn() {
-    if (gameController.isMoveMode()) {
-        // TODO
+    if (controller.isMoveMode()) {
+        controller.rollback();
     }
 }
 
@@ -457,7 +505,7 @@ function startGame() {
         flag = !flag;
     }
 
-    gameController.startGame(white);
+    controller.startGame(white);
 }
 
 function startExample() {
@@ -473,5 +521,5 @@ function startExample() {
     board.setChecker(6, 4, checkerFactory(black, false));
     board.setChecker(5, 7, checkerFactory(black, false));
 
-    gameController.startGame(white);
+    controller.startGame(white);
 }
