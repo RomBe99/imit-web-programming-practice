@@ -359,29 +359,89 @@ class Hinter {
     }
 }
 
+class Recorder {
+    constructor() {
+        this._startFieldId = null;
+        this._currFieldId = null;
+        this._isAttack = null;
+        this._movedChecker = null;
+        this._isEmpty = true;
+    }
+
+    record(startFieldId, currFieldId, isAttack, movedChecker) {
+        this._startFieldId = startFieldId;
+        this._currFieldId = currFieldId;
+        this._isAttack = isAttack;
+        this._movedChecker = movedChecker;
+        this._isEmpty = false;
+    }
+
+    clear() {
+        this._startFieldId = null;
+        this._currFieldId = null;
+        this._isAttack = null;
+        this._movedChecker = null;
+        this._isEmpty = true;
+    }
+
+    get startFieldId() {
+        return this._startFieldId;
+    }
+
+    get currFieldId() {
+        return this._currFieldId;
+    }
+
+    get isAttack() {
+        return this._isAttack;
+    }
+
+    get movedChecker() {
+        return this._movedChecker;
+    }
+
+    get isEmpty() {
+        return this._isEmpty;
+    }
+}
+
 class GameController {
     constructor(board, firstMoveColor) {
         this._board = board;
         this._renderer = new BoardRenderer(this._board);
         this._hinter = new Hinter(this._board);
+        this._recorder = new Recorder();
         this._currentMoveColor = firstMoveColor;
         this._currentFieldId = null;
         this._availableMoves = null;
     }
 
     commit() {
-        // TODO
-        this._renderer.refresh();
+        // TODO Занести в журнал
+        if (!this._recorder.isEmpty) {
+            this._recorder.clear();
+            this.stopMoveMode(this._currentFieldId);
+        }
     }
 
     rollback() {
-        // TODO
+        if (!this._recorder.isEmpty) {
+            const startRowCol = idParser(this._recorder.startFieldId);
+            this._board.setChecker(startRowCol[0], startRowCol[1], this._recorder.movedChecker);
+
+            const rowCol = idParser(this._recorder.currFieldId);
+            this._board.removeChecker(rowCol[0], rowCol[1]);
+
+            this._recorder.clear();
+            this.stopMoveMode(this._currentFieldId);
+        }
     }
 
     startGame(firstMoveColor) {
         this._currentMoveColor = firstMoveColor;
 
         this.stopMoveMode(this._currentFieldId);
+        this._recorder.clear();
     }
 
     startMoveMode(fieldId) {
@@ -394,7 +454,7 @@ class GameController {
     }
 
     stopMoveMode(fieldId) {
-        if (fieldId === this._currentFieldId) {
+        if (fieldId === this._currentFieldId && this._recorder.isEmpty) {
             this._currentFieldId = null;
             this._availableMoves = null;
 
@@ -403,9 +463,9 @@ class GameController {
     }
 
     moveTo(fieldId) {
-        const move = this._availableMoves.get(fieldId);
+        const isAttack = this._availableMoves.get(fieldId);
 
-        if (move == null) {
+        if (isAttack == null) {
             return;
         }
 
@@ -416,6 +476,7 @@ class GameController {
         };
         let movedChecker = this._board.getChecker(oldRowCol[0], oldRowCol[1]);
 
+        this._recorder.record(this._currentFieldId, fieldId, isAttack, movedChecker);
         this._board.removeChecker(oldRowCol[0], oldRowCol[1]);
 
         if (!movedChecker.isKing && canTransformToKing()) {
