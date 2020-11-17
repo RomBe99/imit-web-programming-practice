@@ -118,6 +118,10 @@ class BoardRenderer {
         this._board = board;
         this._isRendered = false;
         this._isRenderedHints = false;
+        this._colorsToName = new Map([
+            [white, 'белые'],
+            [black, 'чёрные']
+        ]);
     }
 
     drawHint(fieldId, color) {
@@ -222,6 +226,10 @@ class BoardRenderer {
         }
 
         this.drawBoard();
+    }
+
+    printWhoMove(color) {
+        alert('Сейчас ходят ' + this._colorsToName.get(color));
     }
 }
 
@@ -441,6 +449,7 @@ class GameController {
         this._currentMoveColor = firstMoveColor;
 
         this.stopMoveMode(this._currentFieldId);
+        this._renderer.printWhoMove(this._currentMoveColor);
         this._recorder.clear();
     }
 
