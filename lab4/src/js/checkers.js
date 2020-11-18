@@ -365,6 +365,7 @@ class Recorder {
         this._currFieldId = null;
         this._isAttack = null;
         this._movedChecker = null;
+        this._historyContainerId = 'match_history';
         this._isEmpty = true;
     }
 
@@ -393,7 +394,15 @@ class Recorder {
         const elem = document.createElement("li");
 
         elem.innerHTML = this._movedChecker.checkerColor + this._startFieldId + recSeparator + this._currFieldId;
-        document.getElementById('match_history').append(elem);
+        document.getElementById(this._historyContainerId).append(elem);
+    }
+
+    clearHistory() {
+        const elem = document.getElementById(this._historyContainerId);
+
+        for (let c = elem.lastChild; c !== elem.firstChild; c = elem.lastChild) {
+            elem.removeChild(c);
+        }
     }
 
     get startFieldId() {
@@ -482,6 +491,7 @@ class GameController {
         this.stopMoveMode(this._currentFieldId);
         this.whoMove();
         this._recorder.clear();
+        this._recorder.clearHistory();
     }
 
     startMoveMode(fieldId) {
