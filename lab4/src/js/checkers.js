@@ -118,10 +118,6 @@ class BoardRenderer {
         this._board = board;
         this._isRendered = false;
         this._isRenderedHints = false;
-        this._colorsToName = new Map([
-            [white, 'белые'],
-            [black, 'чёрные']
-        ]);
     }
 
     drawHint(fieldId, color) {
@@ -226,10 +222,6 @@ class BoardRenderer {
         }
 
         this.drawBoard();
-    }
-
-    printWhoMove(color) {
-        alert('Сейчас ходят ' + this._colorsToName.get(color));
     }
 }
 
@@ -392,6 +384,18 @@ class Recorder {
         this._isEmpty = true;
     }
 
+    writeToHistory() {
+        if (this.isEmpty) {
+            return;
+        }
+
+        const recSeparator = this.isAttack ? ':' : '-';
+        const elem = document.createElement("li");
+
+        elem.innerHTML = this._movedChecker.checkerColor + this._startFieldId + recSeparator + this._currFieldId;
+        document.getElementById('match_history').append(elem);
+    }
+
     get startFieldId() {
         return this._startFieldId;
     }
@@ -420,15 +424,42 @@ class GameController {
         this._hinter = new Hinter(this._board);
         this._recorder = new Recorder();
         this._currentMoveColor = firstMoveColor;
+        this._colorsToName = new Map([
+            [white, 'белые'],
+            [black, 'чёрные']
+        ]);
         this._currentFieldId = null;
         this._availableMoves = null;
     }
 
+    whoMove() {
+        alert('Сейчас ходят ' + this._colorsToName.get(this._currentMoveColor));
+    }
+
     commit() {
-        // TODO Занести в журнал
         if (!this._recorder.isEmpty) {
-            this._recorder.clear();
-            this.stopMoveMode(this._currentFieldId);
+            this._recorder.writeToHistory();
+            let existAttack = false;
+
+            if (this.checkMove(this._recorder.currFieldId)) {
+                for (const isAttack of this._availableMoves.values()) {
+                    if (isAttack) {
+                        existAttack = true;
+                        break;
+                    }
+                }
+            }
+
+            if (this._recorder.isAttack && existAttack) {
+                this._currentFieldId = this._recorder.currFieldId;
+                this._recorder.clear();
+                this.startMoveMode(this._currentFieldId);
+            } else {
+                this._recorder.clear();
+                this.stopMoveMode(this._currentFieldId);
+                this.changePlayerMove();
+                this.whoMove();
+            }
         }
     }
 
@@ -449,7 +480,7 @@ class GameController {
         this._currentMoveColor = firstMoveColor;
 
         this.stopMoveMode(this._currentFieldId);
-        this._renderer.printWhoMove(this._currentMoveColor);
+        this.whoMove();
         this._recorder.clear();
     }
 
@@ -481,7 +512,7 @@ class GameController {
         const oldRowCol = idParser(this._currentFieldId);
         const newRowCol = idParser(fieldId);
         const canTransformToKing = () => {
-            return newRowCol[0] === 0 || newRowCol[1] === this._board.rowCount - 1;
+            return newRowCol[0] === 0 || newRowCol[0] === this._board.rowCount - 1;
         };
         let movedChecker = this._board.getChecker(oldRowCol[0], oldRowCol[1]);
 

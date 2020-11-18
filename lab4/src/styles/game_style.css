@@ -16,3 +16,9 @@
 .button__control-buttons {
     margin: 5px 0 5px 0;
 }
+
+.history__match-history {
+    margin-left: 20px;
+    list-style: decimal;
+    padding: 0;
+}
