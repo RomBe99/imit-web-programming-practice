@@ -136,7 +136,7 @@ class BoardRenderer {
         this.drawHint(fieldId, currentChecker);
 
         for (let i of fieldList) {
-            this.drawHint(i[0], i[1] ? attackColor : validColor);
+            this.drawHint(i[0], i[1] != null ? attackColor : validColor);
         }
 
         this._isRenderedHints = true;
@@ -256,10 +256,10 @@ class Hinter {
         const enemyColor = checker.checkerColor === white ? black : white;
 
         if (checker.isKing) {
-            return this.hintForKing(row, col, checker.checkerColor, enemyColor);
+            return this.hintForKing(row, col, checker.checkerColor);
         }
 
-        return this.hintForChecker(row, col, checker.checkerColor, enemyColor);
+        return this.hintForChecker(row, col, checker.checkerColor);
     }
 
     hintForChecker(row, col, checkerColor) {
@@ -270,19 +270,23 @@ class Hinter {
         const currRowDir = rowDirections.get(checkerColor);
         let result = new Map();
         let isAttack = false;
-        const moveScanner = (row, col, isLeft) => {
+        const moveScanner = (row, col, isLeft, isDown) => {
             if (this.checkRow(row) && this.checkCol(col)
                 && !this._board.containsCheckerWithColor(row, col, checkerColor)) {
                 if (!this._board.containsChecker(row, col)) {
                     const fieldId = idTransformer(row, col);
-                    result.set(fieldId, false);
+                    if (!result.has(fieldId)) {
+                        result.set(fieldId, null);
+                    }
                 } else {
-                    let tempRow = row + currRowDir;
+                    let tempRow = row + (isDown ? -1 : 1);
                     let tempCol = col + (isLeft ? -1 : 1);
 
-                    if (!this._board.containsChecker(tempRow, tempCol)) {
+                    if (this.checkRow(tempRow) && this.checkCol(tempCol) && !this._board.containsChecker(tempRow, tempCol)) {
                         const fieldId = idTransformer(tempRow, tempCol);
-                        result.set(fieldId, true);
+                        if (!result.has(fieldId)) {
+                            result.set(fieldId, idTransformer(row, col));
+                        }
 
                         isAttack = true;
                     }
@@ -290,12 +294,13 @@ class Hinter {
             }
         };
 
-        moveScanner(row + currRowDir, col + 1, false);
-        moveScanner(row + currRowDir, col - 1, true);
+        const isDown = checkerColor === black;
+        moveScanner(row + currRowDir, col + 1, false, isDown);
+        moveScanner(row + currRowDir, col - 1, true, isDown);
 
         if (isAttack) {
             for (let i of result) {
-                if (!i[1]) {
+                if (i[1] == null) {
                     result.delete(i[0]);
                 }
             }
@@ -313,16 +318,16 @@ class Hinter {
                 if (!this._board.containsChecker(row, col)) {
                     const fieldId = idTransformer(row, col);
                     if (!result.has(fieldId)) {
-                        result.set(fieldId, false);
+                        result.set(fieldId, null);
                     }
                 } else {
                     let tempRow = row + (isDown ? -1 : 1);
                     let tempCol = col + (isLeft ? -1 : 1);
 
-                    if (!this._board.containsChecker(tempRow, tempCol)) {
+                    if (this.checkRow(row) && this.checkCol(col) && !this._board.containsChecker(tempRow, tempCol)) {
                         const fieldId = idTransformer(tempRow, tempCol);
                         if (!result.has(fieldId)) {
-                            result.set(fieldId, true);
+                            result.set(fieldId, idTransformer(row, col));
                         }
 
                         isAttack = true;
@@ -349,7 +354,7 @@ class Hinter {
 
         if (isAttack) {
             for (let i of result) {
-                if (!i[1]) {
+                if (i[1] == null) {
                     result.delete(i[0]);
                 }
             }
@@ -448,11 +453,18 @@ class GameController {
     commit() {
         if (!this._recorder.isEmpty) {
             this._recorder.writeToHistory();
+
+            if (this._recorder.isAttack) {
+                const victimRowCol = idParser(this._availableMoves.get(this._recorder.currFieldId));
+
+                this._board.removeChecker(victimRowCol[0], victimRowCol[1]);
+            }
+
             let existAttack = false;
 
             if (this.checkMove(this._recorder.currFieldId)) {
-                for (const isAttack of this._availableMoves.values()) {
-                    if (isAttack) {
+                for (const victimId of this._availableMoves.values()) {
+                    if (victimId != null) {
                         existAttack = true;
                         break;
                     }
@@ -513,11 +525,11 @@ class GameController {
     }
 
     moveTo(fieldId) {
-        const isAttack = this._availableMoves.get(fieldId);
-
-        if (isAttack == null) {
+        if (!this._availableMoves.has(fieldId)) {
             return;
         }
+
+        const isAttack = this._availableMoves.get(fieldId) != null;
 
         const oldRowCol = idParser(this._currentFieldId);
         const newRowCol = idParser(fieldId);
