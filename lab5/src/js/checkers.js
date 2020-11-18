@@ -38,6 +38,8 @@ class CheckerBoard {
     constructor() {
         this._colCount = 8;
         this._rowCount = 8;
+        this._blackCount = 0;
+        this._whiteCount = 0;
         this._board = new Array(this._rowCount);
 
         for (let i = 0; i < this._rowCount; i++) {
@@ -46,6 +48,24 @@ class CheckerBoard {
     }
 
     setChecker(row, col, checker) {
+        if (checker != null) {
+            if (checker.checkerColor === white) {
+                this._whiteCount++;
+            } else {
+                this._blackCount++;
+            }
+        }
+
+        const tempChecker = this._board[row][col];
+
+        if (tempChecker != null) {
+            if (tempChecker.checkerColor === white) {
+                this._whiteCount--;
+            } else {
+                this._blackCount--;
+            }
+        }
+
         this._board[row][col] = checker;
     }
 
@@ -57,6 +77,9 @@ class CheckerBoard {
         for (let i = 0; i < this._rowCount; i++) {
             this._board[i] = new Array(this._colCount).fill(null);
         }
+
+        this._whiteCount = 0;
+        this._blackCount = 0;
     }
 
     getChecker(row, col) {
@@ -64,13 +87,13 @@ class CheckerBoard {
     }
 
     containsChecker(row, col) {
-        return this.getChecker(row, col) !== null;
+        return this.getChecker(row, col) != null;
     }
 
     containsCheckerWithColor(row, col, color) {
         const checker = this.getChecker(row, col);
 
-        return checker !== null ? checker.checkerColor === color : false;
+        return checker != null ? checker.checkerColor === color : false;
     }
 
     get colCount() {
@@ -79,6 +102,14 @@ class CheckerBoard {
 
     get rowCount() {
         return this._rowCount;
+    }
+
+    get whiteCount() {
+        return this._whiteCount;
+    }
+
+    get blackCount() {
+        return this._blackCount;
     }
 }
 
@@ -105,7 +136,7 @@ class BoardRenderer {
         this.drawHint(fieldId, currentChecker);
 
         for (let i of fieldList) {
-            this.drawHint(i[0], i[1] ? attackColor : validColor);
+            this.drawHint(i[0], i[1] != null ? attackColor : validColor);
         }
 
         this._isRenderedHints = true;
@@ -152,7 +183,7 @@ class BoardRenderer {
             for (let col = 0; col < boardCol; col++) {
                 let checker = this._board.getChecker(row, col);
 
-                if (checker !== null) {
+                if (checker != null) {
                     let elemId = idTransformer(row, col);
 
                     document.getElementById(elemId).appendChild(getImage(checker.checkerColor, checker.isKing));
@@ -172,7 +203,7 @@ class BoardRenderer {
                 let elemId = idTransformer(row, col);
                 let element = document.getElementById(elemId);
 
-                if (element.lastChild !== null) {
+                if (element.lastChild != null) {
                     element.removeChild(element.lastChild);
                 }
             }
@@ -218,17 +249,17 @@ class Hinter {
 
         const checker = this._board.getChecker(row, col);
 
-        if (checker === null) {
+        if (checker == null) {
             return null;
         }
 
         const enemyColor = checker.checkerColor === white ? black : white;
 
         if (checker.isKing) {
-            return this.hintForKing(row, col, checker.checkerColor, enemyColor);
+            return this.hintForKing(row, col, checker.checkerColor);
         }
 
-        return this.hintForChecker(row, col, checker.checkerColor, enemyColor);
+        return this.hintForChecker(row, col, checker.checkerColor);
     }
 
     hintForChecker(row, col, checkerColor) {
@@ -239,19 +270,23 @@ class Hinter {
         const currRowDir = rowDirections.get(checkerColor);
         let result = new Map();
         let isAttack = false;
-        const moveScanner = (row, col, isLeft) => {
+        const moveScanner = (row, col, isLeft, isDown) => {
             if (this.checkRow(row) && this.checkCol(col)
                 && !this._board.containsCheckerWithColor(row, col, checkerColor)) {
                 if (!this._board.containsChecker(row, col)) {
                     const fieldId = idTransformer(row, col);
-                    result.set(fieldId, false);
+                    if (!result.has(fieldId)) {
+                        result.set(fieldId, null);
+                    }
                 } else {
-                    let tempRow = row + currRowDir;
+                    let tempRow = row + (isDown ? -1 : 1);
                     let tempCol = col + (isLeft ? -1 : 1);
 
-                    if (!this._board.containsChecker(tempRow, tempCol)) {
+                    if (this.checkRow(tempRow) && this.checkCol(tempCol) && !this._board.containsChecker(tempRow, tempCol)) {
                         const fieldId = idTransformer(tempRow, tempCol);
-                        result.set(fieldId, true);
+                        if (!result.has(fieldId)) {
+                            result.set(fieldId, idTransformer(row, col));
+                        }
 
                         isAttack = true;
                     }
@@ -259,12 +294,13 @@ class Hinter {
             }
         };
 
-        moveScanner(row + currRowDir, col + 1, false);
-        moveScanner(row + currRowDir, col - 1, true);
+        const isDown = checkerColor === black;
+        moveScanner(row + currRowDir, col + 1, false, isDown);
+        moveScanner(row + currRowDir, col - 1, true, isDown);
 
         if (isAttack) {
             for (let i of result) {
-                if (!i[1]) {
+                if (i[1] == null) {
                     result.delete(i[0]);
                 }
             }
@@ -282,16 +318,16 @@ class Hinter {
                 if (!this._board.containsChecker(row, col)) {
                     const fieldId = idTransformer(row, col);
                     if (!result.has(fieldId)) {
-                        result.set(fieldId, false);
+                        result.set(fieldId, null);
                     }
                 } else {
                     let tempRow = row + (isDown ? -1 : 1);
                     let tempCol = col + (isLeft ? -1 : 1);
 
-                    if (!this._board.containsChecker(tempRow, tempCol)) {
+                    if (this.checkRow(row) && this.checkCol(col) && !this._board.containsChecker(tempRow, tempCol)) {
                         const fieldId = idTransformer(tempRow, tempCol);
                         if (!result.has(fieldId)) {
-                            result.set(fieldId, true);
+                            result.set(fieldId, idTransformer(row, col));
                         }
 
                         isAttack = true;
@@ -318,7 +354,7 @@ class Hinter {
 
         if (isAttack) {
             for (let i of result) {
-                if (!i[1]) {
+                if (i[1] == null) {
                     result.delete(i[0]);
                 }
             }
@@ -328,30 +364,235 @@ class Hinter {
     }
 }
 
-const board = new CheckerBoard();
-const renderer = new BoardRenderer(board);
-const hinter = new Hinter(board);
-let currentFieldId = null;
-
-function hint(fieldId) {
-    if (currentFieldId != null) {
-        if (fieldId === currentFieldId) {
-            currentFieldId = null;
-            renderer.refresh();
-        }
-
-        return;
+class Recorder {
+    constructor() {
+        this._startFieldId = null;
+        this._currFieldId = null;
+        this._isAttack = null;
+        this._movedChecker = null;
+        this._historyContainerId = 'match_history';
+        this._isEmpty = true;
     }
 
-    currentFieldId = fieldId;
+    record(startFieldId, currFieldId, isAttack, movedChecker) {
+        this._startFieldId = startFieldId;
+        this._currFieldId = currFieldId;
+        this._isAttack = isAttack;
+        this._movedChecker = movedChecker;
+        this._isEmpty = false;
+    }
 
-    const moves = hinter.hint(fieldId);
+    clear() {
+        this._startFieldId = null;
+        this._currFieldId = null;
+        this._isAttack = null;
+        this._movedChecker = null;
+        this._isEmpty = true;
+    }
 
-    if (moves !== null) {
-        renderer.refresh();
-        renderer.drawHints(moves, fieldId);
+    writeToHistory() {
+        if (this.isEmpty) {
+            return;
+        }
+
+        const recSeparator = this.isAttack ? ':' : '-';
+        const elem = document.createElement("li");
+
+        elem.innerHTML = this._movedChecker.checkerColor + this._startFieldId + recSeparator + this._currFieldId;
+        document.getElementById(this._historyContainerId).append(elem);
+    }
+
+    clearHistory() {
+        const elem = document.getElementById(this._historyContainerId);
+
+        for (let c = elem.lastChild; c !== elem.firstChild; c = elem.lastChild) {
+            elem.removeChild(c);
+        }
+    }
+
+    get startFieldId() {
+        return this._startFieldId;
+    }
+
+    get currFieldId() {
+        return this._currFieldId;
+    }
+
+    get isAttack() {
+        return this._isAttack;
+    }
+
+    get movedChecker() {
+        return this._movedChecker;
+    }
+
+    get isEmpty() {
+        return this._isEmpty;
+    }
+}
+
+class GameController {
+    constructor(board, firstMoveColor) {
+        this._board = board;
+        this._renderer = new BoardRenderer(this._board);
+        this._hinter = new Hinter(this._board);
+        this._recorder = new Recorder();
+        this._currentMoveColor = firstMoveColor;
+        this._colorsToName = new Map([
+            [white, 'белые'],
+            [black, 'чёрные']
+        ]);
+        this._currentFieldId = null;
+        this._availableMoves = null;
+    }
+
+    whoMove() {
+        alert('Сейчас ходят ' + this._colorsToName.get(this._currentMoveColor));
+    }
+
+    commit() {
+        if (!this._recorder.isEmpty) {
+            this._recorder.writeToHistory();
+
+            if (this._recorder.isAttack) {
+                const victimRowCol = idParser(this._availableMoves.get(this._recorder.currFieldId));
+
+                this._board.removeChecker(victimRowCol[0], victimRowCol[1]);
+            }
+
+            let existAttack = false;
+
+            if (this.checkMove(this._recorder.currFieldId)) {
+                for (const victimId of this._availableMoves.values()) {
+                    if (victimId != null) {
+                        existAttack = true;
+                        break;
+                    }
+                }
+            }
+
+            if (this._recorder.isAttack && existAttack) {
+                this._currentFieldId = this._recorder.currFieldId;
+                this._recorder.clear();
+                this.startMoveMode(this._currentFieldId);
+            } else {
+                this._recorder.clear();
+                this.stopMoveMode(this._currentFieldId);
+                this.changePlayerMove();
+                this.whoMove();
+            }
+        }
+    }
+
+    rollback() {
+        if (!this._recorder.isEmpty) {
+            const startRowCol = idParser(this._recorder.startFieldId);
+            this._board.setChecker(startRowCol[0], startRowCol[1], this._recorder.movedChecker);
+
+            const rowCol = idParser(this._recorder.currFieldId);
+            this._board.removeChecker(rowCol[0], rowCol[1]);
+
+            this._recorder.clear();
+            this.stopMoveMode(this._currentFieldId);
+        }
+    }
+
+    startGame(firstMoveColor) {
+        this._currentMoveColor = firstMoveColor;
+
+        this.stopMoveMode(this._currentFieldId);
+        this.whoMove();
+        this._recorder.clear();
+        this._recorder.clearHistory();
+    }
+
+    startMoveMode(fieldId) {
+        const existMoves = this.checkMove(fieldId);
+
+        if (existMoves) {
+            this._currentFieldId = fieldId;
+            this._renderer.drawHints(this._availableMoves, fieldId);
+        }
+    }
+
+    stopMoveMode(fieldId) {
+        if (fieldId === this._currentFieldId && this._recorder.isEmpty) {
+            this._currentFieldId = null;
+            this._availableMoves = null;
+
+            this._renderer.refresh();
+        }
+    }
+
+    moveTo(fieldId) {
+        if (!this._availableMoves.has(fieldId)) {
+            return;
+        }
+
+        const isAttack = this._availableMoves.get(fieldId) != null;
+
+        const oldRowCol = idParser(this._currentFieldId);
+        const newRowCol = idParser(fieldId);
+        const canTransformToKing = () => {
+            return newRowCol[0] === 0 || newRowCol[0] === this._board.rowCount - 1;
+        };
+        let movedChecker = this._board.getChecker(oldRowCol[0], oldRowCol[1]);
+
+        this._recorder.record(this._currentFieldId, fieldId, isAttack, movedChecker);
+        this._board.removeChecker(oldRowCol[0], oldRowCol[1]);
+
+        if (!movedChecker.isKing && canTransformToKing()) {
+            movedChecker = checkerFactory(movedChecker.checkerColor, true);
+        }
+
+        this._board.setChecker(newRowCol[0], newRowCol[1], movedChecker);
+        this._renderer.refresh();
+    }
+
+    changePlayerMove() {
+        this._currentMoveColor = this._currentMoveColor === white ? black : white;
+    }
+
+    isMoveMode() {
+        return this._currentFieldId != null;
+    }
+
+    checkMove(fieldId) {
+        const rowCol = idParser(fieldId);
+        const isCorrectChecker = this._board.getChecker(rowCol[0], rowCol[1]).checkerColor === this._currentMoveColor;
+
+        if (isCorrectChecker) {
+            this._availableMoves = this._hinter.hint(fieldId);
+        }
+
+        return this._availableMoves != null && this._availableMoves.size !== 0;
+    }
+}
+
+const board = new CheckerBoard();
+const controller = new GameController(board, white);
+
+function move(fieldId) {
+    if (controller.isMoveMode()) {
+        controller.stopMoveMode(fieldId);
+
+        if (controller.isMoveMode()) {
+            controller.moveTo(fieldId);
+        }
     } else {
-        renderer.refresh();
+        controller.startMoveMode(fieldId);
+    }
+}
+
+function endTurn() {
+    if (controller.isMoveMode()) {
+        controller.commit();
+    }
+}
+
+function undoTurn() {
+    if (controller.isMoveMode()) {
+        controller.rollback();
     }
 }
 
@@ -387,7 +628,7 @@ function startGame() {
         flag = !flag;
     }
 
-    renderer.refresh();
+    controller.startGame(white);
 }
 
 function startExample() {
@@ -403,5 +644,5 @@ function startExample() {
     board.setChecker(6, 4, checkerFactory(black, false));
     board.setChecker(5, 7, checkerFactory(black, false));
 
-    renderer.refresh();
+    controller.startGame(white);
 }
