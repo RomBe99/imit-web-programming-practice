@@ -361,7 +361,7 @@ class Recorder {
     clearHistory() {
         const elem = document.getElementById(this._historyContainerId);
 
-        for (let c = elem.lastChild; c !== elem.firstChild; c = elem.lastChild) {
+        for (let c = elem.lastChild; c != null; c = elem.lastChild) {
             elem.removeChild(c);
         }
     }
@@ -400,6 +400,7 @@ class GameController {
         ]);
         this._currentFieldId = null;
         this._availableMoves = null;
+        this._isStarted = false;
     }
 
     whoMove() {
@@ -455,11 +456,41 @@ class GameController {
 
     startGame(firstMoveColor) {
         this._currentMoveColor = firstMoveColor;
+        this._isStarted = true;
 
         this.stopMoveMode(this._currentFieldId);
         this.whoMove();
         this._recorder.clear();
         this._recorder.clearHistory();
+    }
+
+    whoWin() {
+        if (this._board.whiteCount === 0) {
+            return white;
+        }
+
+        if (this._board.blackCount === 0) {
+            return black;
+        }
+
+        return null;
+    }
+
+    stopGame() {
+        const whoWin = this.whoWin();
+
+        if (whoWin != null) {
+            this._isStarted = false;
+            this._currentFieldId = null;
+            this._availableMoves = null;
+
+            this._board.clear();
+            this._recorder.clearHistory();
+            this._recorder.clear();
+            this._renderer.refresh();
+
+            alert(this._colorsToName.get(whoWin) + ' победили!');
+        }
     }
 
     startMoveMode(fieldId) {
@@ -523,31 +554,38 @@ class GameController {
 
         return this._availableMoves != null && this._availableMoves.size !== 0;
     }
+
+    get isStarted() {
+        return this._isStarted;
+    }
 }
 
 const board = new CheckerBoard();
 const controller = new GameController(board, white);
 
 function move(fieldId) {
-    if (controller.isMoveMode()) {
-        controller.stopMoveMode(fieldId);
-
+    if (controller.isStarted) {
         if (controller.isMoveMode()) {
-            controller.moveTo(fieldId);
+            controller.stopMoveMode(fieldId);
+
+            if (controller.isMoveMode()) {
+                controller.moveTo(fieldId);
+            }
+        } else {
+            controller.startMoveMode(fieldId);
         }
-    } else {
-        controller.startMoveMode(fieldId);
     }
 }
 
 function endTurn() {
-    if (controller.isMoveMode()) {
+    if (controller.isStarted && controller.isMoveMode()) {
         controller.commit();
+        controller.stopGame();
     }
 }
 
 function undoTurn() {
-    if (controller.isMoveMode()) {
+    if (controller.isStarted && controller.isMoveMode()) {
         controller.rollback();
     }
 }
