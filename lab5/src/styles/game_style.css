@@ -1,11 +1,8 @@
 .match-history__game {
+    text-align: center;
     border: solid;
     height: 636px;
     width: 150px;
-}
-
-.title__match-history {
-    text-align: center;
 }
 
 .control-buttons__content {
@@ -18,7 +15,5 @@
 }
 
 .history__match-history {
-    margin-left: 20px;
-    list-style: decimal;
-    padding: 0;
+    list-style: none;
 }
