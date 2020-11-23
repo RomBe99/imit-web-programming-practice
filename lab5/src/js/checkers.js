@@ -230,126 +230,82 @@ class Hinter {
         this._board = board;
     }
 
-    checkRow(row) {
-        return row >= 0 && row < this._board.rowCount;
-    }
-
-    checkCol(col) {
-        return col >= 0 && col < this._board.colCount;
-    }
-
     hint(fieldId) {
         const coordinates = idParser(fieldId);
         const row = coordinates[0];
         const col = coordinates[1];
-
-        if (!this.checkRow(row) || !this.checkCol(col)) {
-            return null;
-        }
-
         const checker = this._board.getChecker(row, col);
 
         if (checker == null) {
             return null;
         }
 
+        const checkerColor = checker.checkerColor;
         const enemyColor = checker.checkerColor === white ? black : white;
 
+        let result = new Map();
+        let isAttack = false;
+        const moveScanner = (row, col, isLeft, isDown) => {
+            const isCorrectRow = (r) => {
+                return r >= 0 && r < this._board.rowCount;
+            };
+            const isCorrectCol = (c) => {
+                return c >= 0 && c < this._board.colCount;
+            };
+
+            if (!isCorrectRow(row) || !isCorrectCol(col) || this._board.containsCheckerWithColor(row, col, checkerColor)) {
+                return;
+            }
+
+            if (this._board.containsCheckerWithColor(row, col, enemyColor)) {
+                let tempRow = row + (isDown ? -1 : 1);
+                let tempCol = col + (isLeft ? -1 : 1);
+
+                if (isCorrectRow(tempRow) && isCorrectCol(tempCol) && !this._board.containsChecker(tempRow, tempCol)) {
+                    const fieldId = idTransformer(tempRow, tempCol);
+
+                    if (!result.has(fieldId)) {
+                        result.set(fieldId, idTransformer(row, col));
+                    }
+
+                    isAttack = true;
+                }
+            } else {
+                const fieldId = idTransformer(row, col);
+
+                if (!result.has(fieldId)) {
+                    result.set(fieldId, null);
+                }
+            }
+        };
+
         if (checker.isKing) {
-            return this.hintForKing(row, col, checker.checkerColor);
-        }
-
-        return this.hintForChecker(row, col, checker.checkerColor);
-    }
-
-    hintForChecker(row, col, checkerColor) {
-        const rowDirections = new Map([
-            [black, -1],
-            [white, 1]
-        ]);
-        const currRowDir = rowDirections.get(checkerColor);
-        let result = new Map();
-        let isAttack = false;
-        const moveScanner = (row, col, isLeft, isDown) => {
-            if (this.checkRow(row) && this.checkCol(col)
-                && !this._board.containsCheckerWithColor(row, col, checkerColor)) {
-                if (!this._board.containsChecker(row, col)) {
-                    const fieldId = idTransformer(row, col);
-                    if (!result.has(fieldId)) {
-                        result.set(fieldId, null);
-                    }
-                } else {
-                    let tempRow = row + (isDown ? -1 : 1);
-                    let tempCol = col + (isLeft ? -1 : 1);
-
-                    if (this.checkRow(tempRow) && this.checkCol(tempCol) && !this._board.containsChecker(tempRow, tempCol)) {
-                        const fieldId = idTransformer(tempRow, tempCol);
-                        if (!result.has(fieldId)) {
-                            result.set(fieldId, idTransformer(row, col));
-                        }
-
-                        isAttack = true;
-                    }
-                }
+            for (let i = 0; i < this._board.rowCount; i++) {
+                moveScanner(row + i, col + i, false, false);
             }
-        };
 
-        const isDown = checkerColor === black;
-        moveScanner(row + currRowDir, col + 1, false, isDown);
-        moveScanner(row + currRowDir, col - 1, true, isDown);
-
-        if (isAttack) {
-            for (let i of result) {
-                if (i[1] == null) {
-                    result.delete(i[0]);
-                }
+            for (let i = 0; i < this._board.rowCount; i++) {
+                moveScanner(row + i, col - i, true, false);
             }
-        }
 
-        return result;
-    }
-
-    hintForKing(row, col, checkerColor) {
-        let result = new Map();
-        let isAttack = false;
-        const moveScanner = (row, col, isLeft, isDown) => {
-            if (this.checkRow(row) && this.checkCol(col)
-                && !this._board.containsCheckerWithColor(row, col, checkerColor)) {
-                if (!this._board.containsChecker(row, col)) {
-                    const fieldId = idTransformer(row, col);
-                    if (!result.has(fieldId)) {
-                        result.set(fieldId, null);
-                    }
-                } else {
-                    let tempRow = row + (isDown ? -1 : 1);
-                    let tempCol = col + (isLeft ? -1 : 1);
-
-                    if (this.checkRow(row) && this.checkCol(col) && !this._board.containsChecker(tempRow, tempCol)) {
-                        const fieldId = idTransformer(tempRow, tempCol);
-                        if (!result.has(fieldId)) {
-                            result.set(fieldId, idTransformer(row, col));
-                        }
-
-                        isAttack = true;
-                    }
-                }
+            for (let i = 0; i < this._board.rowCount; i++) {
+                moveScanner(row - i, col + i, false, true);
             }
-        };
 
-        for (let i = 0; i < this._board.rowCount; i++) {
-            moveScanner(row + i, col + i, false, false);
-        }
+            for (let i = 0; i < this._board.rowCount; i++) {
+                moveScanner(row - i, col - i, true, true);
+            }
+        } else {
+            const isDown = checkerColor === black;
+            const currRowDir = (white === checkerColor ? 1 : -1);
 
-        for (let i = 0; i < this._board.rowCount; i++) {
-            moveScanner(row + i, col - i, true, false);
-        }
+            moveScanner(row + currRowDir, col + 1, false, isDown);
+            moveScanner(row + currRowDir, col - 1, true, isDown);
 
-        for (let i = 0; i < this._board.rowCount; i++) {
-            moveScanner(row - i, col + i, false, true);
-        }
-
-        for (let i = 0; i < this._board.rowCount; i++) {
-            moveScanner(row - i, col - i, true, true);
+            if (isAttack) {
+                moveScanner(row - currRowDir, col + 1, false, !isDown);
+                moveScanner(row - currRowDir, col - 1, true, !isDown);
+            }
         }
 
         if (isAttack) {
@@ -454,19 +410,19 @@ class GameController {
         if (!this._recorder.isEmpty) {
             this._recorder.writeToHistory();
 
+            let existAttack = false;
+
             if (this._recorder.isAttack) {
                 const victimRowCol = idParser(this._availableMoves.get(this._recorder.currFieldId));
 
                 this._board.removeChecker(victimRowCol[0], victimRowCol[1]);
-            }
 
-            let existAttack = false;
-
-            if (this.checkMove(this._recorder.currFieldId)) {
-                for (const victimId of this._availableMoves.values()) {
-                    if (victimId != null) {
-                        existAttack = true;
-                        break;
+                if (this.checkMove(this._recorder.currFieldId)) {
+                    for (const victimId of this._availableMoves.values()) {
+                        if (victimId != null) {
+                            existAttack = true;
+                            break;
+                        }
                     }
                 }
             }
