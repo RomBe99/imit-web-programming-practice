@@ -245,6 +245,7 @@ class Hinter {
 
         let result = new Map();
         let isAttack = false;
+        let continueSearch = true;
         const moveScanner = (row, col, isLeft, isDown) => {
             const isCorrectRow = (r) => {
                 return r >= 0 && r < this._board.rowCount;
@@ -269,6 +270,8 @@ class Hinter {
                     }
 
                     isAttack = true;
+                } else {
+                    continueSearch = false;
                 }
             } else {
                 const fieldId = idTransformer(row, col);
@@ -280,19 +283,25 @@ class Hinter {
         };
 
         if (checker.isKing) {
-            for (let i = 0; i < this._board.rowCount; i++) {
+            for (let i = 0; i < this._board.rowCount && continueSearch; i++) {
                 moveScanner(row + i, col + i, false, false);
             }
 
-            for (let i = 0; i < this._board.rowCount; i++) {
+            continueSearch = true;
+
+            for (let i = 0; i < this._board.rowCount && continueSearch; i++) {
                 moveScanner(row + i, col - i, true, false);
             }
 
-            for (let i = 0; i < this._board.rowCount; i++) {
+            continueSearch = true;
+
+            for (let i = 0; i < this._board.rowCount && continueSearch; i++) {
                 moveScanner(row - i, col + i, false, true);
             }
 
-            for (let i = 0; i < this._board.rowCount; i++) {
+            continueSearch = true;
+
+            for (let i = 0; i < this._board.rowCount && continueSearch; i++) {
                 moveScanner(row - i, col - i, true, true);
             }
         } else {
