@@ -636,7 +636,9 @@ function undoTurn() {
     }
 }
 
-function standardCheckerPosition(board) {
+function startGame() {
+    board.clear();
+
     let flag = true;
     const rowsCount = 3;
 
@@ -665,12 +667,6 @@ function standardCheckerPosition(board) {
 
         flag = !flag;
     }
-}
-
-function startGame() {
-    board.clear();
-
-    standardCheckerPosition(board);
 
     controller.startGame(white);
 }
@@ -729,9 +725,7 @@ function parseHistory() {
         return moveSep === moveType || attackSep === moveType;
     };
 
-    board.clear();
-    standardCheckerPosition(board);
-    controller.startGame(white);
+    startGame();
 
     const recorder = new Recorder();
 
