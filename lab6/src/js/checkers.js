@@ -1,5 +1,7 @@
 const white = 'w';
 const black = 'b';
+const attackSep = ':';
+const moveSep = '-';
 const firstLetterCode = 'A'.charCodeAt(0);
 
 function idTransformer(row, col) {
@@ -360,10 +362,9 @@ class Recorder {
             return;
         }
 
-        const recSeparator = this.isAttack ? ':' : '-';
         const elem = document.createElement("li");
 
-        elem.innerHTML = this._movedChecker.checkerColor + this._startFieldId + recSeparator + this._currFieldId;
+        elem.innerHTML = this.getRec();
         document.getElementById(this._historyContainerId).append(elem);
     }
 
@@ -373,6 +374,16 @@ class Recorder {
         for (let c = elem.lastChild; c != null; c = elem.lastChild) {
             elem.removeChild(c);
         }
+    }
+
+    getRec() {
+        if (!this._isEmpty) {
+            const recSeparator = this._isAttack ? attackSep : moveSep;
+
+            return this._movedChecker.checkerColor + this._startFieldId + recSeparator + this._currFieldId;
+        }
+
+        return null;
     }
 
     get startFieldId() {
@@ -396,6 +407,8 @@ class Recorder {
     }
 }
 
+let parserModeOn = false;
+
 class GameController {
     constructor(board, firstMoveColor) {
         this._board = board;
@@ -413,6 +426,10 @@ class GameController {
     }
 
     whoMove() {
+        if (parserModeOn) {
+            return;
+        }
+
         alert('Сейчас ходят ' + this._colorsToName.get(this._currentMoveColor));
     }
 
@@ -486,6 +503,10 @@ class GameController {
     }
 
     stopGame() {
+        if (parserModeOn) {
+            return;
+        }
+
         const whoWin = this.whoWin();
 
         if (whoWin != null) {
@@ -555,7 +576,7 @@ class GameController {
 
     checkMove(fieldId) {
         const rowCol = idParser(fieldId);
-        const isCorrectChecker = this._board.getChecker(rowCol[0], rowCol[1]).checkerColor === this._currentMoveColor;
+        const isCorrectChecker = this._board.getChecker(rowCol[0], rowCol[1])?.checkerColor === this._currentMoveColor;
 
         if (isCorrectChecker) {
             this._availableMoves = this._hinter.hint(fieldId);
@@ -564,8 +585,20 @@ class GameController {
         return this._availableMoves != null && this._availableMoves.size !== 0;
     }
 
+    getCurrRec() {
+        return this._recorder.getRec();
+    }
+
     get isStarted() {
         return this._isStarted;
+    }
+
+    get availableMoves() {
+        return this._availableMoves;
+    }
+
+    get currentMoveColor() {
+        return this._currentMoveColor;
     }
 }
 
@@ -579,11 +612,15 @@ function move(fieldId) {
 
             if (controller.isMoveMode()) {
                 controller.moveTo(fieldId);
+
+                return true;
             }
         } else {
             controller.startMoveMode(fieldId);
         }
     }
+
+    return false;
 }
 
 function endTurn() {
@@ -599,9 +636,7 @@ function undoTurn() {
     }
 }
 
-function startGame() {
-    board.clear();
-
+function standardCheckerPosition(board) {
     let flag = true;
     const rowsCount = 3;
 
@@ -630,6 +665,12 @@ function startGame() {
 
         flag = !flag;
     }
+}
+
+function startGame() {
+    board.clear();
+
+    standardCheckerPosition(board);
 
     controller.startGame(white);
 }
@@ -648,4 +689,111 @@ function startExample() {
     board.setChecker(5, 7, checkerFactory(black, false));
 
     controller.startGame(white);
+}
+
+function activateParserMode() {
+    if (!parserModeOn) {
+        parserModeOn = true;
+
+        parseHistory();
+    }
+
+    parserModeOn = false;
+}
+
+function parseHistory() {
+    const enteredHistory = document.getElementById('entered-history').value.split('\n').filter((elem) => {
+        return '' !== elem.trim();
+    });
+
+    if (enteredHistory.length === 0) {
+        alert('Поле с историей пусто');
+
+        return;
+    }
+
+    const errorStringGenerator = (strNum, errMsg) => {
+        return `В строке №${strNum} найдена ошибка: ${errMsg}`;
+    };
+    const isCorrectPlayerColor = (color) => {
+        return color === white || color === black;
+    };
+    const isCorrectFieldId = (letter, num) => {
+        const letterCode = letter.charCodeAt(0);
+        const isCorrectLetter = firstLetterCode + board.colCount >= letterCode && firstLetterCode <= letterCode;
+        const isCorrectNum = num > 0 && num <= board.rowCount;
+
+        return isCorrectLetter && isCorrectNum;
+    };
+    const isCorrectMoveType = (moveType) => {
+        return moveSep === moveType || attackSep === moveType;
+    };
+
+    board.clear();
+    standardCheckerPosition(board);
+    controller.startGame(white);
+
+    const recorder = new Recorder();
+
+    // move[0] - checker color
+    // move[1] + move[2] - start field id
+    // move[3] - move type. ':' - attack, '-' - move
+    // move[4] + move[5] - finish field id
+    for (let i = 0; i < enteredHistory.length; i++) {
+        const moveRec = enteredHistory[i];
+        const pMoveColor = moveRec[0];
+        const pStartFieldId = moveRec[1] + moveRec[2];
+        const pMoveType = moveRec[3];
+        const pFinishFieldId = moveRec[4] + moveRec[5];
+
+        if (!isCorrectPlayerColor(pMoveColor)) {
+            alert(errorStringGenerator(i + 1, `Неверный цвет шашки ${pMoveColor}`));
+
+            return;
+        }
+
+        if (controller.currentMoveColor !== moveRec[0]) {
+            alert(errorStringGenerator(i + 1, `Сейчас ход игрока ${controller.currentMoveColor}, но обнаружен ${moveRec[0]}`));
+
+            return;
+        }
+
+        if (!isCorrectFieldId(moveRec[1], moveRec[2])) {
+            alert(errorStringGenerator(i + 1, `Неверный id поля с которого начинается ход ${pStartFieldId}`));
+
+            return;
+        }
+
+        if (!isCorrectMoveType(pMoveType)) {
+            alert(errorStringGenerator(i + 1, `Неизвестный тип хода ${pMoveType}`));
+
+            return;
+        }
+
+        if (!isCorrectFieldId(moveRec[4], moveRec[5])) {
+            alert(errorStringGenerator(i + 1, `Неверный id поля на котором заканчивается ход ${pFinishFieldId}`));
+
+            return;
+        }
+
+        recorder.record(pStartFieldId, pFinishFieldId, pMoveType === attackSep, checkerFactory(pMoveColor, false));
+
+        if (controller.checkMove(recorder.startFieldId) && controller.availableMoves.has(recorder.currFieldId)) {
+            move(recorder.startFieldId);
+            move(recorder.currFieldId);
+
+            if (controller.getCurrRec() !== recorder.getRec()) {
+                alert(errorStringGenerator(i + 1, `Запись контроллера ${controller.getCurrRec()} не соответствует записи парсера ${recorder.getRec()}`));
+
+                undoTurn();
+                return;
+            }
+
+            endTurn();
+        } else {
+            alert(errorStringGenerator(i + 1, `Ход ${recorder.getRec()} не соответствует правилам`));
+
+            return;
+        }
+    }
 }

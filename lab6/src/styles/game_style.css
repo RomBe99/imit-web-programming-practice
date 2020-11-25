@@ -17,3 +17,9 @@
 .history__match-history {
     list-style: none;
 }
+
+.history-textarea__control-buttons {
+    width: 100px;
+    height: 460px;
+    resize: none;
+}
