@@ -728,6 +728,7 @@ function parseHistory() {
     startGame();
 
     const recorder = new Recorder();
+    let isPrefAttack = false;
 
     // move[0] - checker color
     // move[1] + move[2] - start field id
@@ -771,9 +772,13 @@ function parseHistory() {
         }
 
         recorder.record(pStartFieldId, pFinishFieldId, pMoveType === attackSep, checkerFactory(pMoveColor, false));
+        isPrefAttack = isPrefAttack && recorder.isAttack;
 
         if (controller.checkMove(recorder.startFieldId) && controller.availableMoves.has(recorder.currFieldId)) {
-            move(recorder.startFieldId);
+            if (!isPrefAttack) {
+                move(recorder.startFieldId);
+            }
+
             move(recorder.currFieldId);
 
             if (controller.getCurrRec() !== recorder.getRec()) {
@@ -784,6 +789,8 @@ function parseHistory() {
             }
 
             endTurn();
+
+            isPrefAttack = controller.currentMoveColor === pMoveColor && attackSep === pMoveType;
         } else {
             alert(errorStringGenerator(i + 1, `Ход ${recorder.getRec()} не соответствует правилам`));
 
