@@ -584,8 +584,7 @@ class GameController {
     }
 
     checkMove(fieldId) {
-        const rowCol = idParser(fieldId);
-        const isCorrectChecker = this._board.getChecker(rowCol[0], rowCol[1])?.checkerColor === this._currentMoveColor;
+        const isCorrectChecker = this.isCorrectChecker(fieldId);
 
         if (isCorrectChecker) {
             this._availableMoves = this._hinter.hint(fieldId);
@@ -596,6 +595,12 @@ class GameController {
 
     getCurrRec() {
         return this._recorder.getRec();
+    }
+
+    isCorrectChecker(fieldId) {
+        const rowCol = idParser(fieldId);
+
+        return this._board.getChecker(rowCol[0], rowCol[1])?.checkerColor === this._currentMoveColor;
     }
 
     get isStarted() {
@@ -720,9 +725,6 @@ function parseHistory() {
     const errorStringGenerator = (strNum, errMsg) => {
         return `В строке №${strNum} найдена ошибка: ${errMsg}`;
     };
-    const isCorrectPlayerColor = (color) => {
-        return color === white || color === black;
-    };
     const isCorrectFieldId = (letter, num) => {
         const letterCode = letter.charCodeAt(0);
         const isCorrectLetter = firstLetterCode + board.colCount >= letterCode && firstLetterCode <= letterCode;
@@ -739,31 +741,24 @@ function parseHistory() {
     const recorder = new Recorder();
     let isPrefAttack = false;
 
-    // move[0] - checker color
-    // move[1] + move[2] - start field id
-    // move[3] - move type. ':' - attack, '-' - move
-    // move[4] + move[5] - finish field id
+    // move[0] + move[1] - start field id
+    // move[2] - move type. ':' - attack, '-' - move
+    // move[3] + move[4] - finish field id
     for (let i = 0; i < enteredHistory.length; i++) {
         const moveRec = enteredHistory[i];
-        const pMoveColor = moveRec[0];
-        const pStartFieldId = moveRec[1] + moveRec[2];
-        const pMoveType = moveRec[3];
-        const pFinishFieldId = moveRec[4] + moveRec[5];
+        const pMoveColor = controller.currentMoveColor;
+        const pStartFieldId = moveRec[0] + moveRec[1];
+        const pMoveType = moveRec[2];
+        const pFinishFieldId = moveRec[3] + moveRec[4];
 
-        if (!isCorrectPlayerColor(pMoveColor)) {
-            alert(errorStringGenerator(i + 1, `Неверный цвет шашки ${pMoveColor}`));
-
-            return;
-        }
-
-        if (controller.currentMoveColor !== moveRec[0]) {
-            alert(errorStringGenerator(i + 1, `Сейчас ход игрока ${controller.currentMoveColor}, но обнаружен ${moveRec[0]}`));
-
-            return;
-        }
-
-        if (!isCorrectFieldId(moveRec[1], moveRec[2])) {
+        if (!isCorrectFieldId(moveRec[0], moveRec[1])) {
             alert(errorStringGenerator(i + 1, `Неверный id поля с которого начинается ход ${pStartFieldId}`));
+
+            return;
+        }
+
+        if (!controller.isCorrectChecker(pStartFieldId)) {
+            alert(errorStringGenerator(i + 1, `Сейчас ход игрока ${controller.currentMoveColor}`));
 
             return;
         }
@@ -774,7 +769,7 @@ function parseHistory() {
             return;
         }
 
-        if (!isCorrectFieldId(moveRec[4], moveRec[5])) {
+        if (!isCorrectFieldId(moveRec[3], moveRec[4])) {
             alert(errorStringGenerator(i + 1, `Неверный id поля на котором заканчивается ход ${pFinishFieldId}`));
 
             return;
