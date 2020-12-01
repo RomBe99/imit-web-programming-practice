@@ -259,10 +259,12 @@ class Hinter {
             if (!isCorrectRow(row) || !isCorrectCol(col) || this._board.containsCheckerWithColor(row, col, checkerColor)) {
                 return;
             }
+            const vStep = isDown ? -1 : 1;
+            const hStep = isLeft ? -1 : 1;
 
             if (this._board.containsCheckerWithColor(row, col, enemyColor)) {
-                let tempRow = row + (isDown ? -1 : 1);
-                let tempCol = col + (isLeft ? -1 : 1);
+                let tempRow = row + vStep;
+                let tempCol = col + hStep;
 
                 if (isCorrectRow(tempRow) && isCorrectCol(tempCol) && !this._board.containsChecker(tempRow, tempCol)) {
                     const fieldId = idTransformer(tempRow, tempCol);
@@ -272,6 +274,13 @@ class Hinter {
                     }
 
                     isAttack = true;
+
+                    tempRow += vStep;
+                    tempCol += hStep;
+
+                    if (isCorrectRow(tempRow) && isCorrectCol(tempCol) && this._board.containsChecker(tempRow, tempCol)) {
+                        continueSearch = false;
+                    }
                 } else {
                     continueSearch = false;
                 }
