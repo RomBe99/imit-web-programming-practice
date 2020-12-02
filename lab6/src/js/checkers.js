@@ -389,7 +389,7 @@ class Recorder {
         if (!this._isEmpty) {
             const recSeparator = this._isAttack ? attackSep : moveSep;
 
-            return this._movedChecker.checkerColor + this._startFieldId + recSeparator + this._currFieldId;
+            return this._startFieldId + recSeparator + this._currFieldId;
         }
 
         return null;
@@ -775,7 +775,7 @@ function parseHistory() {
             return;
         }
 
-        recorder.record(pStartFieldId, pFinishFieldId, pMoveType === attackSep, checkerFactory(pMoveColor, false));
+        recorder.record(pStartFieldId, pFinishFieldId, pMoveType === attackSep, null);
         isPrefAttack = isPrefAttack && recorder.isAttack;
 
         if (controller.checkMove(recorder.startFieldId) && controller.availableMoves.has(recorder.currFieldId)) {
