@@ -346,8 +346,8 @@ class Recorder {
         this._currFieldId = null;
         this._isAttack = null;
         this._movedChecker = null;
+        this._rec = null;
         this._historyContainerId = 'match_history';
-        this._isEmpty = true;
     }
 
     record(startFieldId, currFieldId, isAttack, movedChecker) {
@@ -355,7 +355,13 @@ class Recorder {
         this._currFieldId = currFieldId;
         this._isAttack = isAttack;
         this._movedChecker = movedChecker;
-        this._isEmpty = false;
+        this._rec = this._startFieldId + (this._isAttack ? attackSep : moveSep) + this._currFieldId;
+    }
+
+    appendAttack(nextFieldId) {
+        if (!this.isEmpty && this._isAttack && !this._rec.endsWith(nextFieldId)) {
+            this._rec += attackSep + nextFieldId;
+        }
     }
 
     clear() {
@@ -363,10 +369,16 @@ class Recorder {
         this._currFieldId = null;
         this._isAttack = null;
         this._movedChecker = null;
-        this._isEmpty = true;
+        this._rec = null;
     }
 
-    writeToHistory() {
+    clearWithoutRec() {
+        this._startFieldId = null;
+        this._currFieldId = null;
+        this._movedChecker = null;
+    }
+
+    appendToHistory() {
         if (this.isEmpty) {
             return;
         }
@@ -385,14 +397,20 @@ class Recorder {
         }
     }
 
+    set startFieldId(startFieldId) {
+        this._startFieldId = startFieldId;
+    }
+
+    set currFieldId(currFieldId) {
+        this._currFieldId = currFieldId;
+    }
+
+    set movedChecker(movedChecker) {
+        this._movedChecker = movedChecker;
+    }
+
     getRec() {
-        if (!this._isEmpty) {
-            const recSeparator = this._isAttack ? attackSep : moveSep;
-
-            return this._startFieldId + recSeparator + this._currFieldId;
-        }
-
-        return null;
+        return this._rec;
     }
 
     get startFieldId() {
@@ -412,7 +430,7 @@ class Recorder {
     }
 
     get isEmpty() {
-        return this._isEmpty;
+        return this._rec == null;
     }
 }
 
@@ -444,8 +462,6 @@ class GameController {
 
     commit() {
         if (!this._recorder.isEmpty) {
-            this._recorder.writeToHistory();
-
             let existAttack = false;
 
             if (this._recorder.isAttack) {
@@ -465,9 +481,11 @@ class GameController {
 
             if (this._recorder.isAttack && existAttack) {
                 this._currentFieldId = this._recorder.currFieldId;
-                this._recorder.clear();
+                this._recorder.appendAttack(this._currentFieldId);
                 this.startMoveMode(this._currentFieldId);
             } else {
+                this._recorder.appendAttack(this._recorder.currFieldId);
+                this._recorder.appendToHistory();
                 this._recorder.clear();
                 this.stopMoveMode(this._currentFieldId);
                 this.changePlayerMove();
@@ -484,7 +502,12 @@ class GameController {
             const rowCol = idParser(this._recorder.currFieldId);
             this._board.removeChecker(rowCol[0], rowCol[1]);
 
-            this._recorder.clear();
+            if (this._recorder.isAttack) {
+                this._recorder.clearWithoutRec();
+            } else {
+                this._recorder.clear();
+            }
+
             this.stopMoveMode(this._currentFieldId);
         }
     }
@@ -529,7 +552,11 @@ class GameController {
             this._renderer.refresh();
 
             alert(this._colorsToName.get(whoWin) + ' победили!');
+
+            return true;
         }
+
+        return false;
     }
 
     startMoveMode(fieldId) {
@@ -556,7 +583,6 @@ class GameController {
         }
 
         const isAttack = this._availableMoves.get(fieldId) != null;
-
         const oldRowCol = idParser(this._currentFieldId);
         const newRowCol = idParser(fieldId);
         const canTransformToKing = () => {
@@ -564,7 +590,14 @@ class GameController {
         };
         let movedChecker = this._board.getChecker(oldRowCol[0], oldRowCol[1]);
 
-        this._recorder.record(this._currentFieldId, fieldId, isAttack, movedChecker);
+        if (this._recorder.isEmpty) {
+            this._recorder.record(this._currentFieldId, fieldId, isAttack, movedChecker);
+        } else {
+            this._recorder.startFieldId = this._currentFieldId;
+            this._recorder.currFieldId = fieldId;
+            this._recorder.movedChecker = movedChecker;
+        }
+
         this._board.removeChecker(oldRowCol[0], oldRowCol[1]);
 
         if (!movedChecker.isKing && canTransformToKing()) {
