@@ -372,12 +372,6 @@ class Recorder {
         this._rec = null;
     }
 
-    clearWithoutRec() {
-        this._startFieldId = null;
-        this._currFieldId = null;
-        this._movedChecker = null;
-    }
-
     appendToHistory() {
         if (this.isEmpty) {
             return;
@@ -762,18 +756,27 @@ function parseHistory() {
     const isCorrectMoveType = (moveType) => {
         return moveSep === moveType || attackSep === moveType;
     };
+    const isCorrectAttackMoveRec = (moveRec) => {
+        const moves = moveRec.split(attackSep);
+
+        for (const m of moves) {
+            if (m.length !== 2 || !isCorrectFieldId(m[0], m[1])) {
+                return false;
+            }
+        }
+
+        return true;
+    };
 
     startGame();
 
     const recorder = new Recorder();
-    let isPrefAttack = false;
 
     // move[0] + move[1] - start field id
     // move[2] - move type. ':' - attack, '-' - move
     // move[3] + move[4] - finish field id
     for (let i = 0; i < enteredHistory.length; i++) {
         const moveRec = enteredHistory[i];
-        const pMoveColor = controller.currentMoveColor;
         const pStartFieldId = moveRec[0] + moveRec[1];
         const pMoveType = moveRec[2];
         const pFinishFieldId = moveRec[3] + moveRec[4];
@@ -796,36 +799,87 @@ function parseHistory() {
             return;
         }
 
-        if (!isCorrectFieldId(moveRec[3], moveRec[4])) {
-            alert(errorStringGenerator(i + 1, `Неверный id поля на котором заканчивается ход ${pFinishFieldId}`));
+        const isAttack = pMoveType === attackSep;
+
+        if (isAttack && !isCorrectAttackMoveRec(moveRec)) {
+            alert(errorStringGenerator(i + 1, `Некорректно задан аткающий ход`));
 
             return;
-        }
+        } else {
+            if (!isCorrectFieldId(moveRec[3], moveRec[4])) {
+                alert(errorStringGenerator(i + 1, `Неверный id поля на котором заканчивается ход ${pFinishFieldId}`));
 
-        recorder.record(pStartFieldId, pFinishFieldId, pMoveType === attackSep, null);
-        isPrefAttack = isPrefAttack && recorder.isAttack;
-
-        if (controller.checkMove(recorder.startFieldId) && controller.availableMoves.has(recorder.currFieldId)) {
-            if (!isPrefAttack) {
-                move(recorder.startFieldId);
-            }
-
-            move(recorder.currFieldId);
-
-            if (controller.getCurrRec() !== recorder.getRec()) {
-                alert(errorStringGenerator(i + 1, `Запись контроллера ${controller.getCurrRec()} не соответствует записи парсера ${recorder.getRec()}`));
-
-                undoTurn();
                 return;
             }
+        }
 
-            endTurn();
+        if (isAttack) {
+            const moves = moveRec.split(attackSep);
+            let isCorrectMove = false;
+            recorder.clear();
 
-            isPrefAttack = controller.currentMoveColor === pMoveColor && attackSep === pMoveType;
+            for (let j = 0; j < moves.length - 1; j++) {
+                if (j === 0) {
+                    recorder.record(moves[j], moves[j + 1], isAttack, null);
+                    isCorrectMove = controller.checkMove(recorder.startFieldId) && controller.availableMoves.has(recorder.currFieldId);
+
+                    if (isCorrectMove) {
+                        move(recorder.startFieldId);
+                    } else {
+                        alert(errorStringGenerator(i + 1, `Ход ${recorder.getRec()} не соответствует правилам`));
+
+                        return;
+                    }
+                } else {
+                    recorder.startFieldId = moves[j];
+                    recorder.currFieldId = moves[j + 1];
+                }
+
+                if (j !== 0) {
+                    isCorrectMove = controller.checkMove(recorder.startFieldId) && controller.availableMoves.has(recorder.currFieldId);
+                }
+
+                if (isCorrectMove) {
+                    move(recorder.currFieldId);
+
+                    if (controller.getCurrRec() !== recorder.getRec()) {
+                        alert(errorStringGenerator(i + 1, `Запись контроллера ${controller.getCurrRec()} не соответствует записи парсера ${recorder.getRec()}`));
+
+                        undoTurn();
+                        return;
+                    }
+
+                    endTurn();
+                } else {
+                    alert(errorStringGenerator(i + 1, `Ход ${recorder.getRec()} не соответствует правилам`));
+
+                    return;
+                }
+
+                recorder.appendAttack(recorder.currFieldId);
+            }
+
+            recorder.clear();
         } else {
-            alert(errorStringGenerator(i + 1, `Ход ${recorder.getRec()} не соответствует правилам`));
+            recorder.record(pStartFieldId, pFinishFieldId, isAttack, null);
 
-            return;
+            if (controller.checkMove(recorder.startFieldId) && controller.availableMoves.has(recorder.currFieldId)) {
+                move(recorder.startFieldId);
+                move(recorder.currFieldId);
+
+                if (controller.getCurrRec() !== recorder.getRec()) {
+                    alert(errorStringGenerator(i + 1, `Запись контроллера ${controller.getCurrRec()} не соответствует записи парсера ${recorder.getRec()}`));
+
+                    undoTurn();
+                    return;
+                }
+
+                endTurn();
+            } else {
+                alert(errorStringGenerator(i + 1, `Ход ${recorder.getRec()} не соответствует правилам`));
+
+                return;
+            }
         }
     }
 }
