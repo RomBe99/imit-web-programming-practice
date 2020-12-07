@@ -501,13 +501,7 @@ class GameController {
 
             const rowCol = idParser(this._recorder.currFieldId);
             this._board.removeChecker(rowCol[0], rowCol[1]);
-
-            if (this._recorder.isAttack) {
-                this._recorder.clearWithoutRec();
-            } else {
-                this._recorder.clear();
-            }
-
+            this._recorder.clear();
             this.stopMoveMode(this._currentFieldId);
         }
     }
